@@ -56,7 +56,7 @@ import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Admin": Admin,
+    "admin123123445566": Admin,
     "Booking": Booking,
     "Home": Home,
     "Reviews": Reviews,

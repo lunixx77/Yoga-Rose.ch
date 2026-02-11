@@ -52,59 +52,7 @@ const generateId = () => {
   return `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 };
 
-// Standard-Angebote, damit „Meine Angebote“ auch im Admin-Bereich erscheinen.
-const seedServicesIfEmpty = () => {
-  const existing = readCollection('Service');
-  if (existing.length > 0) return;
-
-  const now = new Date().toISOString();
-  const defaults = [
-    {
-      name: 'Hatha-Yoga',
-      description: 'Klassisches Yoga für Körper und Geist. Ideal für Einsteiger und Fortgeschrittene.',
-      duration_minutes: 75,
-      price: null,
-      type: 'gruppenkurs',
-      max_participants: null,
-      active: true,
-    },
-    {
-      name: 'Schwangerschafts-Yoga',
-      description: 'Sanfte Übungen für werdende Mütter. Stärkt Körper und Geist während der Schwangerschaft.',
-      duration_minutes: 75,
-      price: null,
-      type: 'gruppenkurs',
-      max_participants: null,
-      active: true,
-    },
-    {
-      name: 'Kinder-Yoga',
-      description: 'Spielerisches Yoga für Kinder. Fördert Konzentration, Beweglichkeit und Selbstvertrauen.',
-      duration_minutes: 60,
-      price: null,
-      type: 'gruppenkurs',
-      max_participants: null,
-      active: true,
-    },
-    {
-      name: 'Fastenkurse',
-      description: 'Begleitetes Fasten für Körper und Seele. Eine ganzheitliche Reinigungserfahrung.',
-      duration_minutes: 120,
-      price: null,
-      type: 'fastenkurs',
-      max_participants: null,
-      active: true,
-    },
-  ];
-
-  const seeded = defaults.map((d) => ({
-    id: generateId(),
-    created_date: now,
-    ...d,
-  }));
-
-  writeCollection('Service', seeded);
-};
+// Keine automatischen Standard-Angebote – alles wird im Admin gepflegt.
 
 const applyOrderAndLimit = (items, orderBy, limit) => {
   let result = [...items];
@@ -175,9 +123,6 @@ const createEntityApi = (entityName) => {
     },
   };
 };
-
-// Beim ersten Laden Services aus Standard-Angeboten befüllen
-seedServicesIfEmpty();
 
 const entities = {
   Service: createEntityApi('Service'),
