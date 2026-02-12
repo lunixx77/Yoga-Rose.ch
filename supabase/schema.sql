@@ -11,8 +11,12 @@ create table if not exists public.services (
   price numeric,
   type text not null default 'gruppenkurs',
   max_participants int,
-  active boolean not null default true
+  active boolean not null default true,
+  use_fixed_times boolean not null default false
 );
+
+-- Normale Zeiten (Lektionsplan) nur für Angebote mit use_fixed_times = true
+alter table public.services add column if not exists use_fixed_times boolean not null default false;
 
 -- Anfragen (Anfrage-Formular + Admin: Anfragen)
 create table if not exists public.bookings (
@@ -39,8 +43,14 @@ create table if not exists public.reviews (
   rating int not null check (rating >= 1 and rating <= 5),
   comment text,
   booking_id text,
-  approved boolean not null default true
+  approved boolean not null default true,
+  verified boolean not null default false,
+  service_ids jsonb default '[]'
 );
+
+-- Neue Spalten für Bewertungen (falls Tabelle schon existiert)
+alter table public.reviews add column if not exists verified boolean not null default false;
+alter table public.reviews add column if not exists service_ids jsonb default '[]';
 
 -- Blog & Events (Admin: Blog)
 create table if not exists public.blog_posts (

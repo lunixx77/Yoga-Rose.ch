@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Star, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { Star, Trash2, CheckCircle, XCircle, BadgeCheck } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -19,9 +19,12 @@ export default function ReviewManagement() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, approved }) => base44.entities.Review.update(id, { approved }),
+    mutationFn: ({ id, approved, verified }) =>
+      base44.entities.Review.update(id, { ...(approved !== undefined && { approved }), ...(verified !== undefined && { verified }) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reviews-admin'] });
+      queryClient.invalidateQueries({ queryKey: ['reviews-public'] });
+      queryClient.invalidateQueries({ queryKey: ['reviews-home'] });
     },
   });
 
@@ -45,6 +48,20 @@ export default function ReviewManagement() {
     );
   };
 
+  const { data: services = [] } = useQuery({
+    queryKey: ['services-admin-names'],
+    queryFn: () => base44.entities.Service.list(),
+    initialData: [],
+  });
+
+  const getCourseNames = (serviceIds) => {
+    if (!serviceIds?.length) return "–";
+    return serviceIds
+      .map((id) => services.find((s) => s.id === id)?.name ?? id)
+      .filter(Boolean)
+      .join(", ");
+  };
+
   const pendingReviews = reviews.filter(r => !r.approved);
   const approvedReviews = reviews.filter(r => r.approved);
 
@@ -61,6 +78,7 @@ export default function ReviewManagement() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
+                    <TableHead>Kurse</TableHead>
                     <TableHead>Datum</TableHead>
                     <TableHead>Bewertung</TableHead>
                     <TableHead>Kommentar</TableHead>
@@ -72,6 +90,11 @@ export default function ReviewManagement() {
                     <TableRow key={review.id}>
                       <TableCell>
                         <div className="font-medium">{review.customer_name}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-[140px] text-xs text-gray-600">
+                          {getCourseNames(review.service_ids)}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm text-gray-600">
@@ -130,6 +153,8 @@ export default function ReviewManagement() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
+                    <TableHead>Verifiziert</TableHead>
+                    <TableHead>Kurse</TableHead>
                     <TableHead>Datum</TableHead>
                     <TableHead>Bewertung</TableHead>
                     <TableHead>Kommentar</TableHead>
@@ -141,6 +166,22 @@ export default function ReviewManagement() {
                     <TableRow key={review.id}>
                       <TableCell>
                         <div className="font-medium">{review.customer_name}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => updateMutation.mutate({ id: review.id, verified: !review.verified })}
+                          title={review.verified ? "Blauen Haken entfernen" : "Blauen Haken vergeben (Verifizierter Kunde)"}
+                          className={review.verified ? "text-blue-600" : "text-gray-400"}
+                        >
+                          <BadgeCheck className="h-5 w-5" />
+                        </Button>
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-[140px] text-xs text-gray-600">
+                          {getCourseNames(review.service_ids)}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm text-gray-600">

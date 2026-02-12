@@ -61,7 +61,8 @@ export default function ServiceManagement() {
       price: 0,
       type: "einzelstunde",
       max_participants: null,
-      active: true
+      active: true,
+      use_fixed_times: false,
     });
     setIsEditing(true);
   };
@@ -76,7 +77,8 @@ export default function ServiceManagement() {
       price: parseFloat(formData.get('price')) || null,
       type: formData.get('type'),
       max_participants: formData.get('max_participants') ? parseInt(formData.get('max_participants')) : null,
-      active: editingService.active
+      active: editingService.active,
+      use_fixed_times: !!editingService.use_fixed_times,
     };
 
     if (editingService.id) {
@@ -176,6 +178,16 @@ export default function ServiceManagement() {
               <Label>Aktiv</Label>
             </div>
 
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={!!editingService.use_fixed_times}
+                onCheckedChange={(checked) => setEditingService({...editingService, use_fixed_times: checked})}
+              />
+              <Label className="cursor-pointer">
+                Normale Zeiten (Lektionsplan) – bei der Anfrage werden die festen Zeiten zur Auswahl angezeigt (z. B. Hatha Yoga)
+              </Label>
+            </div>
+
             <div className="flex gap-2 justify-end pt-4">
               <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
                 Abbrechen
@@ -210,6 +222,7 @@ export default function ServiceManagement() {
               <TableHead>Dauer</TableHead>
               <TableHead>Preis</TableHead>
               <TableHead>Max. Teilnehmer</TableHead>
+              <TableHead>Normale Zeiten</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Aktionen</TableHead>
             </TableRow>
@@ -227,6 +240,13 @@ export default function ServiceManagement() {
                 <TableCell>{service.duration_minutes} Min.</TableCell>
                 <TableCell>{service.price ? `CHF ${service.price.toFixed(2)}` : '-'}</TableCell>
                 <TableCell>{service.max_participants || 'Unbegrenzt'}</TableCell>
+                <TableCell>
+                  {service.use_fixed_times ? (
+                    <Badge className="bg-blue-100 text-blue-800">Lektionsplan</Badge>
+                  ) : (
+                    <span className="text-xs text-gray-500">Eigene Zeit</span>
+                  )}
+                </TableCell>
                 <TableCell>
                   <Badge className={service.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
                     {service.active ? 'Aktiv' : 'Inaktiv'}

@@ -5,7 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Heart, Sparkles, Phone, Mail, MapPin, Star } from "lucide-react";
+import { Calendar, Heart, Sparkles, Phone, Mail, MapPin, Star, BadgeCheck } from "lucide-react";
 import EventCard from "@/components/EventCard";
 
 export default function Home() {
@@ -267,6 +267,11 @@ function ReviewsSection() {
     queryFn: () => base44.entities.Review.filter({ approved: true }, '-created_date', 6),
     initialData: [],
   });
+  const { data: services = [] } = useQuery({
+    queryKey: ['services-home'],
+    queryFn: () => base44.entities.Service.filter({ active: true }),
+    initialData: [],
+  });
 
   if (reviews.length === 0) return null;
 
@@ -318,8 +323,23 @@ function ReviewsSection() {
                   <Heart className="w-5 h-5 text-slate-600" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-gray-800">{review.customer_name}</div>
-                  <div className="text-xs text-gray-500">Verifizierter Kunde</div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-semibold text-gray-800">{review.customer_name}</span>
+                    {review.verified && (
+                      <BadgeCheck className="h-4 w-4 shrink-0 text-blue-600" title="Verifizierter Kunde" />
+                    )}
+                  </div>
+                  {review.verified && (
+                    <div className="text-xs text-gray-500">Verifizierter Kunde</div>
+                  )}
+                  {review.service_ids?.length > 0 && (
+                    <div className="text-xs text-gray-600 mt-0.5">
+                      {review.service_ids
+                        .map((id) => services.find((s) => s.id === id)?.name ?? id)
+                        .filter(Boolean)
+                        .join(", ")}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

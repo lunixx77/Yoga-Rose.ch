@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, ArrowLeft, Send, CheckCircle } from "lucide-react";
+import { Star, ArrowLeft, Send, CheckCircle, BadgeCheck } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -18,7 +19,8 @@ export default function Reviews() {
     customer_name: "",
     rating: 5,
     comment: "",
-    booking_id: ""
+    booking_id: "",
+    service_ids: [],
   });
   const [submitted, setSubmitted] = useState(false);
 
@@ -46,13 +48,32 @@ export default function Reviews() {
     onSuccess: () => {
       setSubmitted(true);
       setShowForm(false);
-      setFormData({ customer_name: "", rating: 5, comment: "", booking_id: "" });
+      setFormData({ customer_name: "", rating: 5, comment: "", booking_id: "", service_ids: [] });
     },
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    createReviewMutation.mutate({ ...formData, approved: true });
+    createReviewMutation.mutate({
+      ...formData,
+      approved: true,
+      service_ids: Array.isArray(formData.service_ids) ? formData.service_ids : [],
+    });
+  };
+
+  const { data: services = [] } = useQuery({
+    queryKey: ['services-for-review'],
+    queryFn: () => base44.entities.Service.filter({ active: true }),
+    initialData: [],
+  });
+
+  const toggleService = (serviceId) => {
+    setFormData((prev) => ({
+      ...prev,
+      service_ids: prev.service_ids?.includes(serviceId)
+        ? prev.service_ids.filter((id) => id !== serviceId)
+        : [...(prev.service_ids || []), serviceId],
+    }));
   };
 
   const renderStars = (rating, size = "w-5 h-5") => {
@@ -174,6 +195,27 @@ export default function Reviews() {
               </div>
 
               <div>
+                <Label>Welche Kurse haben Sie besucht? (Mehrfachauswahl möglich)</Label>
+                <div className="mt-2 flex flex-wrap gap-3">
+                  {services.map((s) => (
+                    <label
+                      key={s.id}
+                      className="flex items-center gap-2 cursor-pointer rounded border border-gray-200 px-3 py-2 hover:bg-gray-50"
+                    >
+                      <Checkbox
+                        checked={formData.service_ids?.includes(s.id) ?? false}
+                        onCheckedChange={() => toggleService(s.id)}
+                      />
+                      <span className="text-sm">{s.name}</span>
+                    </label>
+                  ))}
+                  {services.length === 0 && (
+                    <span className="text-sm text-gray-500">Keine Kurse hinterlegt.</span>
+                  )}
+                </div>
+              </div>
+
+              <div>
                 <Label htmlFor="comment">Ihr Kommentar</Label>
                 <Textarea
                   id="comment"
@@ -216,10 +258,23 @@ export default function Reviews() {
               <div key={review.id} className="bg-white border border-gray-300 p-6">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <div className="font-semibold text-gray-800">{review.customer_name}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-800">{review.customer_name}</span>
+                      {review.verified && (
+                        <BadgeCheck className="h-5 w-5 shrink-0 text-blue-600" title="Verifizierter Kunde" />
+                      )}
+                    </div>
                     <div className="text-xs text-gray-500 mt-1">
                       {format(new Date(review.created_date), 'dd. MMMM yyyy', { locale: de })}
                     </div>
+                    {review.service_ids?.length > 0 && (
+                      <div className="text-xs text-gray-600 mt-1">
+                        Kurse: {review.service_ids
+                          .map((id) => services.find((s) => s.id === id)?.name ?? id)
+                          .filter(Boolean)
+                          .join(", ")}
+                      </div>
+                    )}
                   </div>
                   {renderStars(review.rating, "w-4 h-4")}
                 </div>

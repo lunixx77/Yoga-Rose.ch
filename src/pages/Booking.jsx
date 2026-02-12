@@ -82,9 +82,13 @@ export default function Booking() {
     setFormData(prev => ({
       ...prev,
       service_id: serviceId,
-      service_name: service?.name || ""
+      service_name: service?.name || "",
+      preferred_time: ""
     }));
   };
+
+  const selectedService = services?.find(s => s.id === formData.service_id);
+  const useFixedTimes = selectedService?.use_fixed_times === true;
 
   if (submitted) {
     return (
@@ -214,22 +218,35 @@ export default function Booking() {
 
             <div>
               <Label htmlFor="preferred_time">Bevorzugte Zeit *</Label>
-              <Select 
-                value={formData.preferred_time} 
-                onValueChange={(value) => handleChange('preferred_time', value)}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Wählen Sie eine Zeit" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Montag 08:15 - 09:30 Uhr">Montag 08:15 – 09:30 Uhr</SelectItem>
-                  <SelectItem value="Montag 18:30 - 19:45 Uhr">Montag 18:30 – 19:45 Uhr</SelectItem>
-                  <SelectItem value="Montag 20:00 - 21:15 Uhr">Montag 20:00 – 21:15 Uhr</SelectItem>
-                  <SelectItem value="Donnerstag 10:00 - 11:15 Uhr">Donnerstag 10:00 – 11:15 Uhr</SelectItem>
-                  <SelectItem value="Donnerstag 19:30 - 20:45 Uhr">Donnerstag 19:30 – 20:45 Uhr</SelectItem>
-                </SelectContent>
-              </Select>
+              {useFixedTimes ? (
+                <Select
+                  value={formData.preferred_time}
+                  onValueChange={(value) => handleChange('preferred_time', value)}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Wählen Sie eine Zeit (Lektionsplan)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Montag 08:15 - 09:30 Uhr">Montag 08:15 – 09:30 Uhr</SelectItem>
+                    <SelectItem value="Montag 18:30 - 19:45 Uhr">Montag 18:30 – 19:45 Uhr</SelectItem>
+                    <SelectItem value="Montag 20:00 - 21:15 Uhr">Montag 20:00 – 21:15 Uhr</SelectItem>
+                    <SelectItem value="Donnerstag 10:00 - 11:15 Uhr">Donnerstag 10:00 – 11:15 Uhr</SelectItem>
+                    <SelectItem value="Donnerstag 19:30 - 20:45 Uhr">Donnerstag 19:30 – 20:45 Uhr</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  id="preferred_time"
+                  value={formData.preferred_time}
+                  onChange={(e) => handleChange('preferred_time', e.target.value)}
+                  required
+                  placeholder="z. B. Dienstag Vormittag, oder 15. März 10 Uhr"
+                />
+              )}
+              {!formData.service_id && (
+                <p className="text-xs text-gray-500 mt-1">Bitte zuerst ein Angebot wählen. Bei „Normale Zeiten“ erscheinen die Lektionsplan-Zeiten.</p>
+              )}
             </div>
 
             <div className="flex items-center space-x-2">
