@@ -1,6 +1,7 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Users, Star, FileText, Calendar, LayoutTemplate } from "lucide-react";
+import { Settings, Users, Star, FileText, Calendar, LayoutTemplate, Database, AlertCircle } from "lucide-react";
+import { useSupabase } from "@/api/supabaseClient";
 import ServiceManagement from "@/components/admin/ServiceManagement";
 import BookingManagement from "@/components/admin/BookingManagement";
 import ReviewManagement from "@/components/admin/ReviewManagement";
@@ -9,12 +10,26 @@ import EventBookingManagement from "@/components/admin/EventBookingManagement";
 import HomeDesignManagement from "@/components/admin/HomeDesignManagement";
 
 export default function Admin() {
+  const useDb = useSupabase();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">Verwaltung</h1>
           <p className="text-gray-600">Verwalten Sie Ihre Angebote und Anfragen</p>
+
+          {useDb ? (
+            <div className="mt-4 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+              <Database className="h-5 w-5 shrink-0" />
+              <span><strong>Datenbank verbunden.</strong> Alle Änderungen werden gespeichert und sind für jeden Nutzer sichtbar.</span>
+            </div>
+          ) : (
+            <div className="mt-4 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <AlertCircle className="h-5 w-5 shrink-0" />
+              <span><strong>Keine Datenbank verbunden.</strong> Änderungen werden nur lokal in diesem Browser gespeichert und sind nicht für andere Nutzer sichtbar. Siehe <code className="rounded bg-amber-100 px-1">supabase/README.md</code> zum Einrichten.</span>
+            </div>
+          )}
         </div>
 
         <Tabs defaultValue="bookings" className="space-y-6">

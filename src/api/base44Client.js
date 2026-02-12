@@ -1,18 +1,12 @@
-// Lokaler, einfacher "Backend"-Client, der die bisher genutzten
-// Base44-Funktionen im Browser nachbildet (ohne externen Dienst).
+// Backend-Client: Nutzt Supabase (Datenbank), wenn VITE_SUPABASE_URL und
+// VITE_SUPABASE_ANON_KEY gesetzt sind – sonst localStorage (nur lokal).
 //
-// Unterstützte APIs (wie bisher im Code verwendet):
-// - base44.entities.Service    -> list, filter, create, update, delete
-// - base44.entities.Booking    -> list, filter, create, update, delete
-// - base44.entities.Review     -> list, filter, create, update, delete
-// - base44.entities.BlogPost   -> list, filter, create, update, delete
-// - base44.entities.EventBooking -> list, filter, create, update, delete
-// - base44.integrations.Core.SendEmail({ to, subject, body })
-// - base44.integrations.Core.UploadFile({ file }) -> { file_url }
-// - base44.auth.me(), base44.auth.logout(), base44.auth.redirectToLogin()
-//
-// Daten werden in window.localStorage gespeichert, damit Admin-Änderungen
-// und Formulare lokal „persistent“ sind.
+// Entities: Service, Booking, Review, BlogPost, EventBooking, HomeCard
+// Integrations: SendEmail (simuliert), UploadFile (Data-URL)
+// Auth: deaktiviert (öffentliche App)
+
+import { useSupabase } from './supabaseClient';
+import { createSupabaseEntities } from './supabaseBackend';
 
 const STORAGE_PREFIX = 'local_backend_';
 
@@ -51,8 +45,6 @@ const writeCollection = (name, items) => {
 const generateId = () => {
   return `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 };
-
-// Keine automatischen Standard-Angebote – alles wird im Admin gepflegt.
 
 const applyOrderAndLimit = (items, orderBy, limit) => {
   let result = [...items];
@@ -124,13 +116,17 @@ const createEntityApi = (entityName) => {
   };
 };
 
-const entities = {
-  Service: createEntityApi('Service'),
-  Booking: createEntityApi('Booking'),
-  Review: createEntityApi('Review'),
-  BlogPost: createEntityApi('BlogPost'),
-  EventBooking: createEntityApi('EventBooking'),
-  HomeCard: createEntityApi('HomeCard'),
+// Bei Supabase: echte Datenbank; sonst: localStorage
+const supabaseEntities = useSupabase() ? createSupabaseEntities() : null;
+const localEntity = (name) => createEntityApi(name);
+
+const entities = supabaseEntities ?? {
+  Service: localEntity('Service'),
+  Booking: localEntity('Booking'),
+  Review: localEntity('Review'),
+  BlogPost: localEntity('BlogPost'),
+  EventBooking: localEntity('EventBooking'),
+  HomeCard: localEntity('HomeCard'),
 };
 
 const integrations = {
