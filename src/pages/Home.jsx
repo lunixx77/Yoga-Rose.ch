@@ -169,10 +169,9 @@ function BlogSection() {
 
 function YogaGallery() {
   const images = [
-    { url: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80", alt: "Yoga Meditation" },
-    { url: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80", alt: "Yoga Pose" },
-    { url: "https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?w=800&q=80", alt: "Yoga Studio" },
-    { url: "https://images.unsplash.com/photo-1545389336-cf090694435e?w=800&q=80", alt: "Yoga Gruppe" }
+    { url: "/images/singing-bowl.png", alt: "Klangschale – Ruhe und Achtsamkeit" },
+    { url: "/images/meditation-portrait.png", alt: "Meditation in der Yogapraxis" },
+    { url: "/images/triangle-pose.png", alt: "Yoga-Übung in der Praxis" },
   ];
 
   return (
@@ -184,16 +183,16 @@ function YogaGallery() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {images.map((image, index) => (
-            <div 
-              key={index} 
-              className={`relative overflow-hidden rounded-lg shadow-lg group ${index === 0 ? 'md:col-span-2' : ''}`}
+            <div
+              key={index}
+              className={`relative overflow-hidden rounded-lg shadow-lg group ${index === 0 ? "md:col-span-2" : ""}`}
             >
-              <img 
-                src={image.url} 
+              <img
+                src={image.url}
                 alt={image.alt}
-                className={`w-full object-cover transition-transform duration-500 group-hover:scale-110 ${index === 0 ? 'h-96' : 'h-64'}`}
+                className={`w-full object-cover transition-transform duration-500 group-hover:scale-110 ${index === 0 ? "h-96" : "h-64"}`}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
           ))}
         </div>

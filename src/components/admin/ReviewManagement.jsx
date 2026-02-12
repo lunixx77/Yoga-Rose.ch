@@ -8,9 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Star, Trash2, CheckCircle, XCircle, BadgeCheck } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function ReviewManagement() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: reviews } = useQuery({
     queryKey: ['reviews-admin'],
@@ -21,7 +23,30 @@ export default function ReviewManagement() {
   const updateMutation = useMutation({
     mutationFn: ({ id, approved, verified }) =>
       base44.entities.Review.update(id, { ...(approved !== undefined && { approved }), ...(verified !== undefined && { verified }) }),
-    onSuccess: () => {
+    onMutate: async ({ id, approved, verified }) => {
+      await queryClient.cancelQueries({ queryKey: ['reviews-admin'] });
+      const previous = queryClient.getQueryData(['reviews-admin']);
+      queryClient.setQueryData(['reviews-admin'], (old) => {
+        if (!Array.isArray(old)) return old;
+        return old.map((r) =>
+          r.id === id
+            ? { ...r, ...(approved !== undefined && { approved }), ...(verified !== undefined && { verified }) }
+            : r
+        );
+      });
+      return { previous };
+    },
+    onError: (err, _variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['reviews-admin'], context.previous);
+      }
+      toast({
+        title: "Speichern fehlgeschlagen",
+        description: err?.message || "Verifizierung konnte nicht gespeichert werden.",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['reviews-admin'] });
       queryClient.invalidateQueries({ queryKey: ['reviews-public'] });
       queryClient.invalidateQueries({ queryKey: ['reviews-home'] });
@@ -169,13 +194,15 @@ export default function ReviewManagement() {
                       </TableCell>
                       <TableCell>
                         <Button
+                          type="button"
                           variant="ghost"
                           size="icon"
+                          disabled={updateMutation.isPending}
                           onClick={() => updateMutation.mutate({ id: review.id, verified: !review.verified })}
                           title={review.verified ? "Blauen Haken entfernen" : "Blauen Haken vergeben (Verifizierter Kunde)"}
                           className={review.verified ? "text-blue-600" : "text-gray-400"}
                         >
-                          <BadgeCheck className="h-5 w-5" />
+                          <BadgeCheck className={`h-5 w-5 ${review.verified ? "fill-blue-600" : ""}`} />
                         </Button>
                       </TableCell>
                       <TableCell>
