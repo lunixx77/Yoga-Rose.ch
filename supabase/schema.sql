@@ -17,6 +17,8 @@ create table if not exists public.services (
 
 -- Normale Zeiten (Lektionsplan) nur für Angebote mit use_fixed_times = true
 alter table public.services add column if not exists use_fixed_times boolean not null default false;
+-- Zeiten-Typ: '' = keine festen Zeiten, 'hatha' = Hatha-Yoga-Zeiten, 'schwangerschaftsyoga' = Schwangerschaftsyoga 19:00–20:15
+alter table public.services add column if not exists fixed_times_type text not null default '';
 
 -- Anfragen (Anfrage-Formular + Admin: Anfragen)
 create table if not exists public.bookings (

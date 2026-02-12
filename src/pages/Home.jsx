@@ -63,11 +63,12 @@ export default function Home() {
               <ul className="space-y-3 text-stone-700">
                 <li><span className="font-medium">Montag</span></li>
                 <li className="pl-4">08:15 – 09:30 Uhr  Hatha Yoga</li>
+                <li className="pl-4">17:30 – 18:45 Uhr  Hatha Yoga</li>
                 <li className="pl-4">18:30 – 19:45 Uhr  Hatha Yoga</li>
                 <li className="pl-4">20:00 – 21:15 Uhr  Hatha Yoga</li>
                 <li className="pt-2"><span className="font-medium">Donnerstag</span></li>
                 <li className="pl-4">10:00 – 11:15 Uhr  Hatha Yoga</li>
-                <li className="pl-4">19:30 – 20:45 Uhr  Hatha Yoga</li>
+                <li className="pl-4">19:00 – 20:15 Uhr  Schwangerschaftsyoga (Yoganidra)</li>
               </ul>
             </div>
             <div>
@@ -76,7 +77,7 @@ export default function Home() {
                 <li>Einzelstunden / Yoga zu Zweit</li>
                 <li>Yogatherapie</li>
                 <li>Yoga-Workshops</li>
-                <li>Seminare / Schwangerschaftsyoga</li>
+                <li>Seminare</li>
                 <li>Yoga mit Kindern</li>
               </ul>
               <p className="mt-6 text-stone-600 text-sm italic">

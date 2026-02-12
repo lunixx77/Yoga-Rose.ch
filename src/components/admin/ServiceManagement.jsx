@@ -6,16 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function ServiceManagement() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: services, isLoading } = useQuery({
     queryKey: ['services-admin'],
@@ -29,6 +30,14 @@ export default function ServiceManagement() {
       queryClient.invalidateQueries({ queryKey: ['services-admin'] });
       setIsEditing(false);
       setEditingService(null);
+      toast({ title: "Angebot erstellt", description: "Das neue Angebot wurde gespeichert." });
+    },
+    onError: (err) => {
+      toast({
+        title: "Speichern fehlgeschlagen",
+        description: err?.message || "Das Angebot konnte nicht erstellt werden.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -38,6 +47,14 @@ export default function ServiceManagement() {
       queryClient.invalidateQueries({ queryKey: ['services-admin'] });
       setIsEditing(false);
       setEditingService(null);
+      toast({ title: "Angebot gespeichert", description: "Die Änderungen wurden übernommen." });
+    },
+    onError: (err) => {
+      toast({
+        title: "Speichern fehlgeschlagen",
+        description: err?.message || "Die Änderungen konnten nicht gespeichert werden.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -60,26 +77,38 @@ export default function ServiceManagement() {
       duration_minutes: 60,
       price: 0,
       type: "einzelstunde",
-      max_participants: null,
       active: true,
       use_fixed_times: false,
+      fixed_times_type: "",
     });
     setIsEditing(true);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
+    const form = e.target;
+    const formData = new FormData(form);
+    const fixedTimesType = editingService.fixed_times_type ?? (editingService.use_fixed_times ? "hatha" : "");
+    const durationRaw = formData.get("duration_minutes");
+    const durationMinutes = parseInt(String(durationRaw), 10);
     const data = {
-      name: formData.get('name'),
-      description: formData.get('description'),
-      duration_minutes: parseInt(formData.get('duration_minutes')),
-      price: parseFloat(formData.get('price')) || null,
-      type: formData.get('type'),
-      max_participants: formData.get('max_participants') ? parseInt(formData.get('max_participants')) : null,
-      active: editingService.active,
-      use_fixed_times: !!editingService.use_fixed_times,
+      name: String(formData.get("name") ?? "").trim(),
+      description: formData.get("description") != null ? String(formData.get("description")).trim() : null,
+      duration_minutes: Number.isFinite(durationMinutes) && durationMinutes > 0 ? durationMinutes : 60,
+      price: (() => {
+        const p = parseFloat(formData.get("price"));
+        return Number.isFinite(p) ? p : null;
+      })(),
+      type: String(formData.get("type") ?? "gruppenkurs").trim() || "gruppenkurs",
+      active: !!editingService.active,
+      use_fixed_times: fixedTimesType === "hatha" || fixedTimesType === "schwangerschaftsyoga",
+      fixed_times_type: fixedTimesType || "",
     };
+
+    if (!data.name) {
+      toast({ title: "Name fehlt", description: "Bitte geben Sie einen Namen für das Angebot ein.", variant: "destructive" });
+      return;
+    }
 
     if (editingService.id) {
       updateMutation.mutate({ id: editingService.id, data });
@@ -88,57 +117,61 @@ export default function ServiceManagement() {
     }
   };
 
-  if (isEditing) {
+  if (isEditing && editingService) {
+    const fixedTimesValue = editingService.fixed_times_type ?? (editingService.use_fixed_times ? "hatha" : "") ?? "";
     return (
-      <Card>
+      <Card className="border-2 border-gray-200 bg-white shadow-md">
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex items-center justify-between text-gray-900">
             {editingService.id ? 'Angebot bearbeiten' : 'Neues Angebot'}
             <Button variant="ghost" size="icon" onClick={() => setIsEditing(false)}>
               <X className="h-4 w-4" />
             </Button>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="text-gray-900">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="name">Name *</Label>
+                <Label htmlFor="name" className="text-gray-900">Name *</Label>
                 <Input
                   id="name"
                   name="name"
                   defaultValue={editingService.name}
                   required
+                  className="bg-white text-gray-900 border-gray-300"
                 />
               </div>
               <div>
-                <Label htmlFor="type">Art *</Label>
-                <Select name="type" defaultValue={editingService.type} required>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="einzelstunde">Einzelstunde</SelectItem>
-                    <SelectItem value="gruppenkurs">Gruppenkurs</SelectItem>
-                    <SelectItem value="fastenkurs">Fastenkurs</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="type" className="text-gray-900">Art *</Label>
+                <select
+                  id="type"
+                  name="type"
+                  defaultValue={editingService.type}
+                  required
+                  className="flex h-9 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+                >
+                  <option value="einzelstunde">Einzelstunde</option>
+                  <option value="gruppenkurs">Gruppenkurs</option>
+                  <option value="fastenkurs">Fastenkurs</option>
+                </select>
               </div>
             </div>
 
             <div>
-              <Label htmlFor="description">Beschreibung</Label>
+              <Label htmlFor="description" className="text-gray-900">Beschreibung</Label>
               <Textarea
                 id="description"
                 name="description"
                 defaultValue={editingService.description}
                 rows={3}
+                className="bg-white text-gray-900 border-gray-300"
               />
             </div>
 
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="duration_minutes">Dauer (Minuten) *</Label>
+                <Label htmlFor="duration_minutes" className="text-gray-900">Dauer (Minuten) *</Label>
                 <Input
                   id="duration_minutes"
                   name="duration_minutes"
@@ -146,26 +179,18 @@ export default function ServiceManagement() {
                   defaultValue={editingService.duration_minutes}
                   required
                   min="1"
+                  className="bg-white text-gray-900 border-gray-300"
                 />
               </div>
               <div>
-                <Label htmlFor="price">Preis (CHF)</Label>
+                <Label htmlFor="price" className="text-gray-900">Preis (CHF)</Label>
                 <Input
                   id="price"
                   name="price"
                   type="number"
                   step="0.01"
                   defaultValue={editingService.price || ""}
-                />
-              </div>
-              <div>
-                <Label htmlFor="max_participants">Max. Teilnehmer</Label>
-                <Input
-                  id="max_participants"
-                  name="max_participants"
-                  type="number"
-                  defaultValue={editingService.max_participants || ""}
-                  placeholder="Unbegrenzt"
+                  className="bg-white text-gray-900 border-gray-300"
                 />
               </div>
             </div>
@@ -175,25 +200,33 @@ export default function ServiceManagement() {
                 checked={editingService.active}
                 onCheckedChange={(checked) => setEditingService({...editingService, active: checked})}
               />
-              <Label>Aktiv</Label>
+              <Label className="text-gray-900">Aktiv</Label>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={!!editingService.use_fixed_times}
-                onCheckedChange={(checked) => setEditingService({...editingService, use_fixed_times: checked})}
-              />
-              <Label className="cursor-pointer">
-                Normale Zeiten (Lektionsplan) – bei der Anfrage werden die festen Zeiten zur Auswahl angezeigt (z. B. Hatha Yoga)
-              </Label>
+            <div>
+              <Label htmlFor="fixed_times_type" className="text-gray-900">Zeiten bei Anfrage</Label>
+              <select
+                id="fixed_times_type"
+                value={fixedTimesValue}
+                onChange={(e) => setEditingService({ ...editingService, fixed_times_type: e.target.value })}
+                className="mt-1.5 flex h-9 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              >
+                <option value="">Keine festen Zeiten (Gast gibt Zeit frei an)</option>
+                <option value="hatha">Normale Zeiten (Hatha Yoga) – Lektionsplan-Zeiten</option>
+                <option value="schwangerschaftsyoga">Schwangerschaftsyoga – 19:00 – 20:15 Uhr</option>
+              </select>
             </div>
 
             <div className="flex gap-2 justify-end pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
+              <Button type="button" variant="outline" onClick={() => setIsEditing(false)} disabled={createMutation.isPending || updateMutation.isPending}>
                 Abbrechen
               </Button>
-              <Button type="submit" className="bg-green-600 hover:bg-green-700">
-                Speichern
+              <Button
+                type="submit"
+                className="bg-green-600 hover:bg-green-700"
+                disabled={createMutation.isPending || updateMutation.isPending}
+              >
+                {createMutation.isPending || updateMutation.isPending ? "Wird gespeichert …" : "Speichern"}
               </Button>
             </div>
           </form>
@@ -221,7 +254,6 @@ export default function ServiceManagement() {
               <TableHead>Art</TableHead>
               <TableHead>Dauer</TableHead>
               <TableHead>Preis</TableHead>
-              <TableHead>Max. Teilnehmer</TableHead>
               <TableHead>Normale Zeiten</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Aktionen</TableHead>
@@ -239,13 +271,14 @@ export default function ServiceManagement() {
                 </TableCell>
                 <TableCell>{service.duration_minutes} Min.</TableCell>
                 <TableCell>{service.price ? `CHF ${service.price.toFixed(2)}` : '-'}</TableCell>
-                <TableCell>{service.max_participants || 'Unbegrenzt'}</TableCell>
                 <TableCell>
-                  {service.use_fixed_times ? (
-                    <Badge className="bg-blue-100 text-blue-800">Lektionsplan</Badge>
+                  {(service.fixed_times_type ?? (service.use_fixed_times ? "hatha" : "")) === "hatha" ? (
+                    <Badge className="bg-blue-100 text-blue-800">Hatha Yoga</Badge>
+                  ) : (service.fixed_times_type === "schwangerschaftsyoga" ? (
+                    <Badge className="bg-violet-100 text-violet-800">Schwangerschaftsyoga</Badge>
                   ) : (
                     <span className="text-xs text-gray-500">Eigene Zeit</span>
-                  )}
+                  ))}
                 </TableCell>
                 <TableCell>
                   <Badge className={service.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>

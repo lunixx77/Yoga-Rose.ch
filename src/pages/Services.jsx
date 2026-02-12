@@ -6,7 +6,7 @@ import { createPageUrl } from "@/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Users, ArrowLeft } from "lucide-react";
+import { Calendar, Clock, ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Services() {
@@ -88,12 +88,6 @@ export default function Services() {
                         <Clock className="w-4 h-4 mr-1" />
                         {service.duration_minutes} Min.
                       </div>
-                      {service.max_participants && (
-                        <div className="flex items-center">
-                          <Users className="w-4 h-4 mr-1" />
-                          Max. {service.max_participants} Teilnehmer
-                        </div>
-                      )}
                       {service.price && (
                         <div className="font-semibold text-gray-800">
                           CHF {service.price.toFixed(2)}
