@@ -101,7 +101,7 @@ export default function ServiceManagement() {
       })(),
       type: String(formData.get("type") ?? "gruppenkurs").trim() || "gruppenkurs",
       active: !!editingService.active,
-      use_fixed_times: fixedTimesType === "hatha" || fixedTimesType === "schwangerschaftsyoga",
+      use_fixed_times: fixedTimesType === "hatha" || fixedTimesType === "schwangerschaftsyoga" || fixedTimesType === "yoganidra",
       fixed_times_type: fixedTimesType || "",
     };
 
@@ -212,8 +212,9 @@ export default function ServiceManagement() {
                 className="mt-1.5 flex h-9 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
               >
                 <option value="">Keine festen Zeiten (Gast gibt Zeit frei an)</option>
-                <option value="hatha">Normale Zeiten (Hatha Yoga) – Lektionsplan-Zeiten</option>
-                <option value="schwangerschaftsyoga">Schwangerschaftsyoga – 19:00 – 20:15 Uhr</option>
+                <option value="hatha">Hatha Yoga – Lektionsplan-Zeiten</option>
+                <option value="schwangerschaftsyoga">Schwangerschaftsyoga – Do 17:30 – 18:15 Uhr</option>
+                <option value="yoganidra">Yoganidra – Do 19:00 – 20:15 Uhr</option>
               </select>
             </div>
 
@@ -272,13 +273,13 @@ export default function ServiceManagement() {
                 <TableCell>{service.duration_minutes} Min.</TableCell>
                 <TableCell>{service.price ? `CHF ${service.price.toFixed(2)}` : '-'}</TableCell>
                 <TableCell>
-                  {(service.fixed_times_type ?? (service.use_fixed_times ? "hatha" : "")) === "hatha" ? (
-                    <Badge className="bg-blue-100 text-blue-800">Hatha Yoga</Badge>
-                  ) : (service.fixed_times_type === "schwangerschaftsyoga" ? (
-                    <Badge className="bg-violet-100 text-violet-800">Schwangerschaftsyoga</Badge>
-                  ) : (
-                    <span className="text-xs text-gray-500">Eigene Zeit</span>
-                  ))}
+                  {(() => {
+                    const ft = service.fixed_times_type ?? (service.use_fixed_times ? "hatha" : "");
+                    if (ft === "hatha") return <Badge className="bg-blue-100 text-blue-800">Hatha Yoga</Badge>;
+                    if (ft === "schwangerschaftsyoga") return <Badge className="bg-violet-100 text-violet-800">Schwangerschaftsyoga</Badge>;
+                    if (ft === "yoganidra") return <Badge className="bg-amber-100 text-amber-800">Yoganidra</Badge>;
+                    return <span className="text-xs text-gray-500">Eigene Zeit</span>;
+                  })()}
                 </TableCell>
                 <TableCell>
                   <Badge className={service.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>

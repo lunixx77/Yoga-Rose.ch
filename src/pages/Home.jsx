@@ -27,14 +27,16 @@ export default function Home() {
           </div>
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-lg leading-relaxed mb-8 text-gray-200">
-              Willkommen in meiner Yoga-Praxis.
-              Mit jahrelanger Erfahrung begleite ich Sie auf Ihrem Weg zu mehr Balance,
-              Gesundheit und innerer Ruhe.
+              Mit jahrelanger Erfahrung begleite ich Dich auf Deiner Lebensreise.
+              <br />
+              Körperhaltungen, Bewegungsabfolgen, Atemtechniken, Entspannung und Meditation stärken Dein Wohlbefinden auf allen Ebenen.
+              <br />
+              Deinen Möglichkeiten angepasster Unterricht in kleinen Gruppen.
             </p>
             <Link to={createPageUrl("Booking")}>
               <Button size="lg" className="bg-white text-slate-700 hover:bg-gray-100 shadow-xl text-lg px-8 py-6">
                 <Sparkles className="mr-2 h-5 w-5" />
-                Tauche in die Yoga Welt ein
+                Jeder Tag ist ein Neuanfang, atme, lächle und beginne
               </Button>
             </Link>
           </div>
@@ -63,12 +65,14 @@ export default function Home() {
               <ul className="space-y-3 text-stone-700">
                 <li><span className="font-medium">Montag</span></li>
                 <li className="pl-4">08:15 – 09:30 Uhr  Hatha Yoga</li>
-                <li className="pl-4">17:30 – 18:45 Uhr  Hatha Yoga</li>
                 <li className="pl-4">18:30 – 19:45 Uhr  Hatha Yoga</li>
                 <li className="pl-4">20:00 – 21:15 Uhr  Hatha Yoga</li>
+                <li className="pt-2"><span className="font-medium">Mittwoch</span></li>
+                <li className="pl-4">12:00 – 13:15 Uhr  Hatha Yoga</li>
                 <li className="pt-2"><span className="font-medium">Donnerstag</span></li>
                 <li className="pl-4">10:00 – 11:15 Uhr  Hatha Yoga</li>
-                <li className="pl-4">19:00 – 20:15 Uhr  Schwangerschaftsyoga (Yoganidra)</li>
+                <li className="pl-4">17:30 – 18:15 Uhr  Schwangerschaftsyoga</li>
+                <li className="pl-4">19:00 – 20:15 Uhr  Yoganidra</li>
               </ul>
             </div>
             <div>
@@ -133,7 +137,7 @@ export default function Home() {
           <Link to={createPageUrl("Booking")}>
             <Button size="lg" className="bg-white text-slate-700 hover:bg-gray-100 shadow-xl text-lg px-8 py-6">
               <Calendar className="mr-2 h-5 w-5" />
-              Jetzt Termin vereinbaren
+              Jeder Tag ist ein Neuanfang, atme, lächle und beginne
             </Button>
           </Link>
         </div>

@@ -89,7 +89,7 @@ export default function Booking() {
 
   const selectedService = services?.find(s => s.id === formData.service_id);
   const fixedTimesType = selectedService?.fixed_times_type ?? (selectedService?.use_fixed_times ? "hatha" : "");
-  const useFixedTimes = fixedTimesType === "hatha" || fixedTimesType === "schwangerschaftsyoga";
+  const useFixedTimes = fixedTimesType === "hatha" || fixedTimesType === "schwangerschaftsyoga" || fixedTimesType === "yoganidra";
 
   if (submitted) {
     return (
@@ -230,9 +230,9 @@ export default function Booking() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Montag 08:15 - 09:30 Uhr">Montag 08:15 – 09:30 Uhr</SelectItem>
-                    <SelectItem value="Montag 17:30 - 18:45 Uhr">Montag 17:30 – 18:45 Uhr</SelectItem>
                     <SelectItem value="Montag 18:30 - 19:45 Uhr">Montag 18:30 – 19:45 Uhr</SelectItem>
                     <SelectItem value="Montag 20:00 - 21:15 Uhr">Montag 20:00 – 21:15 Uhr</SelectItem>
+                    <SelectItem value="Mittwoch 12:00 - 13:15 Uhr">Mittwoch 12:00 – 13:15 Uhr</SelectItem>
                     <SelectItem value="Donnerstag 10:00 - 11:15 Uhr">Donnerstag 10:00 – 11:15 Uhr</SelectItem>
                   </SelectContent>
                 </Select>
@@ -246,7 +246,20 @@ export default function Booking() {
                     <SelectValue placeholder="Wählen Sie eine Zeit (Schwangerschaftsyoga)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Donnerstag 19:00 - 20:15 Uhr (Yoganidra)">Donnerstag 19:00 – 20:15 Uhr (Yoganidra)</SelectItem>
+                    <SelectItem value="Donnerstag 17:30 - 18:15 Uhr">Donnerstag 17:30 – 18:15 Uhr</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : fixedTimesType === "yoganidra" ? (
+                <Select
+                  value={formData.preferred_time}
+                  onValueChange={(value) => handleChange('preferred_time', value)}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Wählen Sie eine Zeit (Yoganidra)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Donnerstag 19:00 - 20:15 Uhr">Donnerstag 19:00 – 20:15 Uhr</SelectItem>
                   </SelectContent>
                 </Select>
               ) : (
