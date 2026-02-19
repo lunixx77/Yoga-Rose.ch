@@ -147,7 +147,7 @@ export default function Booking() {
                 <SelectContent>
                   {services.map((service) => (
                     <SelectItem key={service.id} value={service.id}>
-                      {service.name} {service.price ? `- CHF ${service.price}` : ''}
+                      {service.name} {service.price ? `– CHF ${service.price} pro Person` : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -191,18 +191,21 @@ export default function Booking() {
               />
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <Label htmlFor="number_of_days">Anzahl Tage</Label>
-                <Input
-                  id="number_of_days"
-                  type="number"
-                  min="1"
-                  value={formData.number_of_days}
-                  onChange={(e) => handleChange('number_of_days', parseInt(e.target.value))}
-                  placeholder="1"
-                />
-              </div>
+            <div className={`grid ${selectedService?.show_days ? 'md:grid-cols-2' : 'md:grid-cols-1'} gap-6`}>
+              {selectedService?.show_days && (
+                <div>
+                  <Label htmlFor="number_of_days">Anzahl Tage *</Label>
+                  <Input
+                    id="number_of_days"
+                    type="number"
+                    min="1"
+                    required
+                    value={formData.number_of_days}
+                    onChange={(e) => handleChange('number_of_days', parseInt(e.target.value))}
+                    placeholder="1"
+                  />
+                </div>
+              )}
 
               <div>
                 <Label htmlFor="number_of_participants">Anzahl Teilnehmer</Label>
@@ -297,6 +300,28 @@ export default function Booking() {
                 rows={5}
               />
             </div>
+
+            {selectedService?.price > 0 && (() => {
+              const participants = Math.max(1, parseInt(formData.number_of_participants) || 1);
+              const total = selectedService.price * participants;
+              return (
+                <div className="rounded-lg border-2 border-gray-300 bg-gray-50 p-5">
+                  <div className="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>{selectedService.name}</span>
+                    <span>CHF {selectedService.price.toFixed(2)} pro Person</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>Anzahl Teilnehmer</span>
+                    <span>{participants}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-gray-900 text-xl border-t-2 border-gray-300 pt-3 mt-3">
+                    <span>Total</span>
+                    <span>CHF {total.toFixed(2)}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2 text-center">Die Preise werden pro Quartal abgerechnet.</p>
+                </div>
+              );
+            })()}
 
             <div className="pt-4">
               <Button 

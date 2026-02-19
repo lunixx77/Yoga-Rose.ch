@@ -90,7 +90,7 @@ export default function Services() {
                       </div>
                       {service.price && (
                         <div className="font-semibold text-gray-800">
-                          CHF {service.price.toFixed(2)}
+                          CHF {service.price.toFixed(2)} <span className="font-normal text-gray-500">pro Person</span>
                         </div>
                       )}
                     </div>

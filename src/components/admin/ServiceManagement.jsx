@@ -80,6 +80,7 @@ export default function ServiceManagement() {
       active: true,
       use_fixed_times: false,
       fixed_times_type: "",
+      show_days: false,
     });
     setIsEditing(true);
   };
@@ -103,6 +104,7 @@ export default function ServiceManagement() {
       active: !!editingService.active,
       use_fixed_times: fixedTimesType === "hatha" || fixedTimesType === "schwangerschaftsyoga" || fixedTimesType === "yoganidra",
       fixed_times_type: fixedTimesType || "",
+      show_days: !!editingService.show_days,
     };
 
     if (!data.name) {
@@ -183,7 +185,7 @@ export default function ServiceManagement() {
                 />
               </div>
               <div>
-                <Label htmlFor="price" className="text-gray-900">Preis (CHF)</Label>
+                <Label htmlFor="price" className="text-gray-900">Preis pro Person (CHF)</Label>
                 <Input
                   id="price"
                   name="price"
@@ -201,6 +203,14 @@ export default function ServiceManagement() {
                 onCheckedChange={(checked) => setEditingService({...editingService, active: checked})}
               />
               <Label className="text-gray-900">Aktiv</Label>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={!!editingService.show_days}
+                onCheckedChange={(checked) => setEditingService({...editingService, show_days: checked})}
+              />
+              <Label className="text-gray-900">Anzahl Tage abfragen (z. B. bei Fastenkursen oder Workshops)</Label>
             </div>
 
             <div>
