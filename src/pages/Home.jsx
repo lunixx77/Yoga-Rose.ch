@@ -35,7 +35,6 @@ export default function Home() {
             </p>
             <Link to={createPageUrl("Booking")}>
               <Button size="lg" className="bg-white text-slate-700 hover:bg-gray-100 shadow-xl text-lg px-8 py-6">
-                <Sparkles className="mr-2 h-5 w-5" />
                 Jeder Tag ist ein Neuanfang, atme, lächle und beginne
               </Button>
             </Link>
@@ -136,7 +135,6 @@ export default function Home() {
           <p className="text-lg text-gray-200 mb-8">Ich freue mich darauf, Sie persönlich kennenzulernen</p>
           <Link to={createPageUrl("Booking")}>
             <Button size="lg" className="bg-white text-slate-700 hover:bg-gray-100 shadow-xl text-lg px-8 py-6">
-              <Calendar className="mr-2 h-5 w-5" />
               Jeder Tag ist ein Neuanfang, atme, lächle und beginne
             </Button>
           </Link>
