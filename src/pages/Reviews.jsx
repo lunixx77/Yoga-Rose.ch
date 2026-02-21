@@ -33,14 +33,16 @@ export default function Reviews() {
   });
 
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const handleSubmit = async () => {
     const name = formData.customer_name.trim();
     if (!name) {
-      alert("Bitte gib Deinen Namen ein.");
+      setSubmitError("Bitte gib Deinen Namen ein.");
       return;
     }
 
+    setSubmitError("");
     setSubmitting(true);
 
     const id = `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
@@ -60,8 +62,16 @@ export default function Reviews() {
 
     try {
       if (supabase) {
-        const { error } = await supabase.from("reviews").insert(row);
-        if (error) throw new Error(error.message);
+        const { error } = await supabase.from("reviews").insert(row).select();
+        if (error) {
+          if (error.message?.includes("service_ids")) {
+            delete row.service_ids;
+            const { error: retry } = await supabase.from("reviews").insert(row).select();
+            if (retry) throw new Error(retry.message);
+          } else {
+            throw new Error(error.message);
+          }
+        }
       } else {
         await base44.entities.Review.create(row);
       }
@@ -78,7 +88,7 @@ export default function Reviews() {
       setSubmitted(true);
     } catch (err) {
       console.error("Bewertung fehlgeschlagen:", err);
-      alert("Bewertung konnte nicht gespeichert werden: " + (err?.message || String(err)));
+      setSubmitError(err?.message || String(err));
     } finally {
       setSubmitting(false);
     }
@@ -248,6 +258,12 @@ export default function Reviews() {
                   rows={5}
                 />
               </div>
+
+              {submitError && (
+                <div className="rounded-lg border-2 border-red-400 bg-red-50 p-4 text-red-700 text-sm">
+                  <strong>Fehler:</strong> {submitError}
+                </div>
+              )}
 
               <div className="flex gap-3">
                 <button

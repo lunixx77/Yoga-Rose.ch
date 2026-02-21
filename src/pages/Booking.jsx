@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { supabase } from "@/api/supabaseClient";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
@@ -51,30 +52,64 @@ export default function Booking() {
     }
   }, [services]);
 
-  const createRequestMutation = useMutation({
-    mutationFn: async (data) => {
-      const booking = await base44.entities.Booking.create(data);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitError("");
+    setSubmitting(true);
+
+    const id = `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+    const row = {
+      id,
+      created_date: new Date().toISOString(),
+      service_id: formData.service_id || null,
+      service_name: formData.service_name || null,
+      customer_name: formData.customer_name,
+      customer_email: formData.customer_email,
+      customer_phone: formData.customer_phone,
+      number_of_days: formData.number_of_days || 1,
+      number_of_participants: formData.number_of_participants || 1,
+      preferred_time: formData.preferred_time || null,
+      preferred_date: formData.preferred_date || null,
+      is_trial: formData.is_trial || false,
+      message: formData.message || null,
+      status: "neu",
+    };
+
+    try {
+      if (supabase) {
+        const { data, error } = await supabase.from("bookings").insert(row).select();
+        if (error) {
+          if (error.message?.includes("preferred_date") || error.message?.includes("number_of_participants")) {
+            delete row.preferred_date;
+            delete row.number_of_participants;
+            const { error: retry } = await supabase.from("bookings").insert(row).select();
+            if (retry) throw new Error(retry.message);
+          } else {
+            throw new Error(error.message);
+          }
+        }
+      } else {
+        await base44.entities.Booking.create(row);
+      }
 
       try {
         const { sendBookingNotification, sendBookingConfirmation } = await import("@/api/emailService");
         await Promise.allSettled([
-          sendBookingNotification(data),
-          sendBookingConfirmation(data),
+          sendBookingNotification(formData),
+          sendBookingConfirmation(formData),
         ]);
-      } catch (emailErr) {
-        console.warn("E-Mail konnte nicht gesendet werden:", emailErr);
-      }
+      } catch (_) { /* email is optional */ }
 
-      return booking;
-    },
-    onSuccess: () => {
       setSubmitted(true);
-    },
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    createRequestMutation.mutate(formData);
+    } catch (err) {
+      console.error("Anfrage fehlgeschlagen:", err);
+      setSubmitError(err?.message || String(err));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleChange = (field, value) => {
@@ -315,14 +350,20 @@ export default function Booking() {
               </div>
             )}
 
+            {submitError && (
+              <div className="rounded-lg border-2 border-red-400 bg-red-50 p-4 text-red-700 text-sm">
+                <strong>Fehler:</strong> {submitError}
+              </div>
+            )}
+
             <div className="pt-4">
               <Button 
                 type="submit" 
                 variant="outline"
                 className="w-full border-2 border-gray-700 text-gray-700 hover:bg-gray-100"
-                disabled={createRequestMutation.isPending}
+                disabled={submitting}
               >
-                {createRequestMutation.isPending ? (
+                {submitting ? (
                   "Wird gesendet..."
                 ) : (
                   <>
