@@ -108,7 +108,7 @@ export default function ServiceManagement() {
     };
 
     if (!data.name) {
-      toast({ title: "Name fehlt", description: "Bitte geben Sie einen Namen für das Angebot ein.", variant: "destructive" });
+      toast({ title: "Name fehlt", description: "Bitte gib einen Namen für das Angebot ein.", variant: "destructive" });
       return;
     }
 
@@ -210,7 +210,7 @@ export default function ServiceManagement() {
                 checked={!!editingService.show_days}
                 onCheckedChange={(checked) => setEditingService({...editingService, show_days: checked})}
               />
-              <Label className="text-gray-900">Anzahl Tage abfragen (z. B. bei Fastenkursen oder Workshops)</Label>
+              <Label className="text-gray-900">Anzahl Male abfragen (z. B. bei Fastenkursen oder Workshops)</Label>
             </div>
 
             <div>

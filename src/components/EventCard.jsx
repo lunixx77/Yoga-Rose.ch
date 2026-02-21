@@ -313,7 +313,7 @@ export default function EventCard({ event }) {
               <div className="text-center py-6">
                 <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
                 <p className="text-gray-600 mb-2">
-                  Vielen Dank für Ihre Reservierung. Wir melden uns in Kürze bei Ihnen.
+                  Vielen Dank für Deine Reservierung. Ich melde mich in Kürze bei Dir.
                 </p>
                 <Button 
                   onClick={() => {
@@ -387,7 +387,7 @@ export default function EventCard({ event }) {
                   </div>
                 ) : (
                   <div className="text-sm text-gray-500 p-3 bg-gray-50 rounded-lg">
-                    Für dieses Event sind keine konkreten Termine festgelegt. Nach Ihrer Anfrage werden wir uns mit Ihnen in Verbindung setzen, um einen passenden Termin zu vereinbaren.
+                    Für dieses Event sind keine konkreten Termine festgelegt. Nach Deiner Anfrage melde ich mich bei Dir, um einen passenden Termin zu vereinbaren.
                   </div>
                 )}
 
@@ -498,7 +498,7 @@ export default function EventCard({ event }) {
                 </Button>
                 {event.dates?.length > 0 && selectedDates.length === 0 && (
                   <p className="text-xs text-red-600 text-center">
-                    Bitte wählen Sie mindestens einen Termin aus
+                    Bitte wähle mindestens einen Termin aus
                   </p>
                 )}
               </form>

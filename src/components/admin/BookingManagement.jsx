@@ -77,8 +77,8 @@ export default function BookingManagement() {
       if (status === 'bestätigt' && booking) {
         await base44.integrations.Core.SendEmail({
           to: booking.customer_email,
-          subject: "Ihre Anfrage wurde bestätigt",
-          body: `Hallo ${booking.customer_name},\n\nIhre Anfrage für "${booking.service_name}" wurde bestätigt.\n\nIch freue mich auf unser Treffen!\n\nHerzliche Grüsse\nRosemarie Fischlin`
+          subject: "Deine Anfrage wurde bestätigt",
+          body: `Hallo ${booking.customer_name},\n\nDeine Anfrage für "${booking.service_name}" wurde bestätigt.\n\nIch freue mich auf unser Treffen!\n\nHerzliche Grüsse\nRosemarie Fischlin`
         });
       }
     },
@@ -203,14 +203,11 @@ export default function BookingManagement() {
                         {booking.preferred_time && (
                           <div className="font-semibold text-blue-700">{booking.preferred_time}</div>
                         )}
-                        {booking.number_of_days && (
-                          <div>{booking.number_of_days} Tag{booking.number_of_days > 1 ? 'e' : ''}</div>
+                        {booking.preferred_date && (
+                          <div className="text-gray-700">Startdatum: {booking.preferred_date}</div>
                         )}
-                        {booking.number_of_participants && (
-                          <div className="flex items-center gap-1">
-                            <Users className="h-3 w-3 text-gray-400" />
-                            {booking.number_of_participants} Teilnehmer
-                          </div>
+                        {booking.number_of_days && (
+                          <div>{booking.number_of_days} Mal{booking.number_of_days > 1 ? 'e' : ''}</div>
                         )}
                         {booking.is_trial && (
                           <Badge variant="outline" className="text-xs">

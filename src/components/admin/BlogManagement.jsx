@@ -232,7 +232,7 @@ export default function BlogManagement() {
             </div>
 
             <div>
-              <Label htmlFor="content">Inhalt * (Gestalten Sie frei!)</Label>
+              <Label htmlFor="content">Inhalt * (Gestalte frei!)</Label>
               <ReactQuill
                 theme="snow"
                 value={formData.content}

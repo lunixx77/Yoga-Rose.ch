@@ -263,7 +263,7 @@ export default function HomeDesignManagement() {
       <CardContent>
         {sortedCards.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
-            Noch keine Karten vorhanden. Erstellen Sie Ihre erste Karte für die Startseite.
+            Noch keine Karten vorhanden. Erstelle Deine erste Karte für die Startseite.
           </div>
         ) : (
           <Table>

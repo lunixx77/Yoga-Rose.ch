@@ -17,7 +17,7 @@ export default function Admin() {
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">Verwaltung</h1>
-          <p className="text-gray-600">Verwalten Sie Ihre Angebote und Anfragen</p>
+          <p className="text-gray-600">Verwalte Deine Angebote und Anfragen</p>
 
           {useDb ? (
             <div className="mt-4 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">

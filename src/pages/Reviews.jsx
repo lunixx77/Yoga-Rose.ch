@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { supabase } from "@/api/supabaseClient";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
 import { Star, ArrowLeft, Send, CheckCircle, BadgeCheck } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
@@ -32,33 +32,56 @@ export default function Reviews() {
     initialData: [],
   });
 
-  const createReviewMutation = useMutation({
-    mutationFn: async (data) => {
-      const review = await base44.entities.Review.create(data);
-      
-      // E-Mail an Betreiber
-      await base44.integrations.Core.SendEmail({
-        to: "rosemarie.fischlin@example.com",
-        subject: "Neue Bewertung erhalten",
-        body: `Neue Bewertung von ${data.customer_name}\n\nSterne: ${'⭐'.repeat(data.rating)}\n${data.comment ? `\nKommentar:\n${data.comment}` : ''}`
-      });
-      
-      return review;
-    },
-    onSuccess: () => {
-      setSubmitted(true);
-      setShowForm(false);
-      setFormData({ customer_name: "", rating: 5, comment: "", booking_id: "", service_ids: [] });
-    },
-  });
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    createReviewMutation.mutate({
-      ...formData,
+  const handleSubmit = async () => {
+    const name = formData.customer_name.trim();
+    if (!name) {
+      alert("Bitte gib Deinen Namen ein.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    const id = `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+    const row = {
+      id,
+      created_date: new Date().toISOString(),
+      customer_name: name,
+      rating: formData.rating,
+      comment: formData.comment?.trim() || null,
       approved: true,
-      service_ids: Array.isArray(formData.service_ids) ? formData.service_ids : [],
-    });
+      verified: false,
+    };
+    const sids = Array.isArray(formData.service_ids) ? formData.service_ids : [];
+    if (sids.length > 0) {
+      row.service_ids = sids;
+    }
+
+    try {
+      if (supabase) {
+        const { error } = await supabase.from("reviews").insert(row);
+        if (error) throw new Error(error.message);
+      } else {
+        await base44.entities.Review.create(row);
+      }
+
+      try {
+        const { sendReviewNotification } = await import("@/api/emailService");
+        await sendReviewNotification(row);
+      } catch (_) { /* email is optional */ }
+
+      queryClient.invalidateQueries({ queryKey: ["reviews-public"] });
+      queryClient.invalidateQueries({ queryKey: ["reviews-admin"] });
+      setFormData({ customer_name: "", rating: 5, comment: "", booking_id: "", service_ids: [] });
+      setShowForm(false);
+      setSubmitted(true);
+    } catch (err) {
+      console.error("Bewertung fehlgeschlagen:", err);
+      alert("Bewertung konnte nicht gespeichert werden: " + (err?.message || String(err)));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const { data: services = [] } = useQuery({
@@ -103,7 +126,7 @@ export default function Reviews() {
             </div>
             <h1 className="text-3xl font-serif text-gray-800 mb-2">Bewertung erhalten</h1>
             <p className="text-gray-600 text-sm mb-8">
-              Vielen Dank für Ihre Bewertung. Sie ist jetzt veröffentlicht und sichtbar.
+              Vielen Dank für Deine Bewertung. Sie ist jetzt veröffentlicht und sichtbar.
             </p>
             <Button 
               variant="outline" 
@@ -161,16 +184,15 @@ export default function Reviews() {
           </div>
         ) : (
           <div className="border-2 border-gray-300 bg-white p-8 mb-8">
-            <h2 className="text-xl font-serif text-gray-800 mb-6">Ihre Bewertung</h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <h2 className="text-xl font-serif text-gray-800 mb-6">Deine Bewertung</h2>
+            <div className="space-y-6">
               <div>
-                <Label htmlFor="customer_name">Ihr Name *</Label>
+                <Label htmlFor="customer_name">Dein Name *</Label>
                 <Input
                   id="customer_name"
                   value={formData.customer_name}
                   onChange={(e) => setFormData(prev => ({ ...prev, customer_name: e.target.value }))}
-                  required
-                  placeholder="Ihr Name"
+                  placeholder="Dein Name"
                 />
               </div>
 
@@ -195,19 +217,20 @@ export default function Reviews() {
               </div>
 
               <div>
-                <Label>Welche Kurse haben Sie besucht? (Mehrfachauswahl möglich)</Label>
+                <Label>Welche Kurse hast Du besucht? (Mehrfachauswahl möglich)</Label>
                 <div className="mt-2 flex flex-wrap gap-3">
                   {services.map((s) => (
-                    <label
+                    <div
                       key={s.id}
                       className="flex items-center gap-2 cursor-pointer rounded border border-gray-200 px-3 py-2 hover:bg-gray-50"
+                      onClick={() => toggleService(s.id)}
                     >
                       <Checkbox
                         checked={formData.service_ids?.includes(s.id) ?? false}
                         onCheckedChange={() => toggleService(s.id)}
                       />
                       <span className="text-sm">{s.name}</span>
-                    </label>
+                    </div>
                   ))}
                   {services.length === 0 && (
                     <span className="text-sm text-gray-500">Keine Kurse hinterlegt.</span>
@@ -216,35 +239,34 @@ export default function Reviews() {
               </div>
 
               <div>
-                <Label htmlFor="comment">Ihr Kommentar</Label>
+                <Label htmlFor="comment">Dein Kommentar</Label>
                 <Textarea
                   id="comment"
                   value={formData.comment}
                   onChange={(e) => setFormData(prev => ({ ...prev, comment: e.target.value }))}
-                  placeholder="Teilen Sie Ihre Erfahrungen..."
+                  placeholder="Teile Deine Erfahrungen..."
                   rows={5}
                 />
               </div>
 
               <div className="flex gap-3">
-                <Button 
+                <button
                   type="button"
-                  variant="outline"
-                  className="flex-1 border-2 border-gray-400 text-gray-600 hover:bg-gray-50"
+                  className="flex-1 rounded-md border-2 border-gray-400 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
                   onClick={() => setShowForm(false)}
                 >
                   Abbrechen
-                </Button>
-                <Button 
-                  type="submit" 
-                  variant="outline"
-                  className="flex-1 border-2 border-gray-700 text-gray-700 hover:bg-gray-100"
-                  disabled={createReviewMutation.isPending}
+                </button>
+                <button
+                  type="button"
+                  disabled={submitting}
+                  className="flex-1 rounded-md border-2 border-gray-700 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                  onClick={handleSubmit}
                 >
-                  {createReviewMutation.isPending ? "Wird gesendet..." : "Bewertung absenden"}
-                </Button>
+                  {submitting ? "Wird gesendet..." : "Bewertung absenden"}
+                </button>
               </div>
-            </form>
+            </div>
           </div>
         )}
 

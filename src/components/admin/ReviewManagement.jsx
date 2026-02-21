@@ -1,6 +1,7 @@
 import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { supabase } from "@/api/supabaseClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -21,8 +22,18 @@ export default function ReviewManagement() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, approved, verified }) =>
-      base44.entities.Review.update(id, { ...(approved !== undefined && { approved }), ...(verified !== undefined && { verified }) }),
+    mutationFn: async ({ id, approved, verified }) => {
+      const patch = {};
+      if (approved !== undefined) patch.approved = approved;
+      if (verified !== undefined) patch.verified = verified;
+
+      if (supabase) {
+        const { error } = await supabase.from("reviews").update(patch).eq("id", id);
+        if (error) throw new Error(error.message);
+      } else {
+        await base44.entities.Review.update(id, patch);
+      }
+    },
     onMutate: async ({ id, approved, verified }) => {
       await queryClient.cancelQueries({ queryKey: ['reviews-admin'] });
       const previous = queryClient.getQueryData(['reviews-admin']);
@@ -54,7 +65,14 @@ export default function ReviewManagement() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Review.delete(id),
+    mutationFn: async (id) => {
+      if (supabase) {
+        const { error } = await supabase.from("reviews").delete().eq("id", id);
+        if (error) throw new Error(error.message);
+      } else {
+        await base44.entities.Review.delete(id);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reviews-admin'] });
     },

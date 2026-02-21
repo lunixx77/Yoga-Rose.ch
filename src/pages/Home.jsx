@@ -131,8 +131,8 @@ export default function Home() {
       {/* CTA Section */}
       <div className="bg-gradient-to-r from-[#C5A572] to-[#A88759] text-white py-16 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-semibold mb-4">Bereit für Ihre Yoga-Reise?</h2>
-          <p className="text-lg text-gray-200 mb-8">Ich freue mich darauf, Sie persönlich kennenzulernen</p>
+          <h2 className="text-3xl font-semibold mb-4">Bereit für Deine Yoga-Reise?</h2>
+          <p className="text-lg text-gray-200 mb-8">Ich freue mich darauf, Dich persönlich kennenzulernen</p>
           <Link to={createPageUrl("Booking")}>
             <Button size="lg" className="bg-white text-slate-700 hover:bg-gray-100 shadow-xl text-lg px-8 py-6">
               Jeder Tag ist ein Neuanfang, atme, lächle und beginne
@@ -158,7 +158,7 @@ function BlogSection() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-serif text-gray-800 mb-3">Aktuelle Events, Specials & Neuigkeiten</h2>
-          <p className="text-gray-600">Entdecken Sie unsere neuesten Angebote, Veranstaltungen und Nachrichten</p>
+          <p className="text-gray-600">Entdecke unsere neuesten Angebote, Veranstaltungen und Nachrichten</p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map((post) => (
@@ -173,8 +173,8 @@ function BlogSection() {
 function YogaGallery() {
   const images = [
     { url: "/images/singing-bowl.png", alt: "Klangschale – Ruhe und Achtsamkeit" },
-    { url: "/images/meditation-portrait.png", alt: "Meditation in der Yogapraxis" },
-    { url: "/images/triangle-pose.png", alt: "Yoga-Übung in der Praxis" },
+    { url: "/images/meditation-portrait.png", alt: "Meditation in der Yogaschule" },
+    { url: "/images/triangle-pose.png", alt: "Yoga-Übung in der Yogaschule" },
   ];
 
   return (
@@ -182,7 +182,7 @@ function YogaGallery() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-serif text-gray-800 mb-3">Einblicke in die Yoga Welt</h2>
-          <p className="text-gray-600">Erleben Sie die Atmosphäre und Energie meiner Yoga-Praxis</p>
+          <p className="text-gray-600">Erlebe die Atmosphäre und Energie meiner Yogaschule</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {images.map((image, index) => (
@@ -228,7 +228,7 @@ function HomeCardsSection() {
         <div className="text-center mb-12">
           <h2 className="text-4xl font-serif text-gray-800 mb-3">Meine Angebote</h2>
           <p className="text-gray-600">
-            Entdecken Sie die Vielfalt meiner Yoga- und Heilangebote
+            Entdecke die Vielfalt meiner Yoga- und Heilangebote
           </p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">

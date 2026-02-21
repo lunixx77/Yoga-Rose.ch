@@ -21,6 +21,7 @@ export default function Booking() {
     number_of_days: 1,
     number_of_participants: 1,
     preferred_time: "",
+    preferred_date: "",
     is_trial: false,
     message: ""
   });
@@ -53,14 +54,17 @@ export default function Booking() {
   const createRequestMutation = useMutation({
     mutationFn: async (data) => {
       const booking = await base44.entities.Booking.create(data);
-      
-      // E-Mail an Betreiber
-      await base44.integrations.Core.SendEmail({
-        to: "rosemarie.fischlin@example.com",
-        subject: "Neue Anfrage erhalten",
-        body: `Neue Anfrage von ${data.customer_name}\n\nAngebot: ${data.service_name}\nE-Mail: ${data.customer_email}\nTelefon: ${data.customer_phone}\n${data.preferred_time ? `Bevorzugte Zeit: ${data.preferred_time}\n` : ''}${data.number_of_days ? `Tage: ${data.number_of_days}\n` : ''}${data.number_of_participants ? `Teilnehmer: ${data.number_of_participants}\n` : ''}${data.is_trial ? 'Schnupperstunde: Ja\n' : ''}${data.message ? `\nNachricht:\n${data.message}` : ''}`
-      });
-      
+
+      try {
+        const { sendBookingNotification, sendBookingConfirmation } = await import("@/api/emailService");
+        await Promise.allSettled([
+          sendBookingNotification(data),
+          sendBookingConfirmation(data),
+        ]);
+      } catch (emailErr) {
+        console.warn("E-Mail konnte nicht gesendet werden:", emailErr);
+      }
+
       return booking;
     },
     onSuccess: () => {
@@ -101,7 +105,7 @@ export default function Booking() {
             </div>
             <h1 className="text-3xl font-serif text-gray-800 mb-2">Anfrage erhalten</h1>
             <p className="text-gray-600 text-sm mb-8">
-              Vielen Dank für Ihre Anfrage. Ich melde mich in Kürze bei Ihnen.
+              Vielen Dank für Deine Anfrage. Ich melde mich in Kürze bei Dir.
             </p>
             <Link to={createPageUrl("Home")}>
               <Button variant="outline" className="border-2 border-gray-700 text-gray-700 hover:bg-gray-100">
@@ -128,7 +132,7 @@ export default function Booking() {
             <h1 className="text-3xl font-serif text-gray-800">Anfrage senden</h1>
           </div>
           <p className="text-base text-gray-600">
-            Füllen Sie das Formular aus und ich melde mich bei Ihnen
+            Fülle das Formular aus und ich melde mich bei Dir
           </p>
         </div>
 
@@ -142,7 +146,7 @@ export default function Booking() {
                 required
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Wählen Sie ein Angebot" />
+                  <SelectValue placeholder="Wähle ein Angebot" />
                 </SelectTrigger>
                 <SelectContent>
                   {services.map((service) => (
@@ -162,7 +166,7 @@ export default function Booking() {
                   value={formData.customer_name}
                   onChange={(e) => handleChange('customer_name', e.target.value)}
                   required
-                  placeholder="Ihr vollständiger Name"
+                  placeholder="Dein vollständiger Name"
                 />
               </div>
 
@@ -191,34 +195,20 @@ export default function Booking() {
               />
             </div>
 
-            <div className={`grid ${selectedService?.show_days ? 'md:grid-cols-2' : 'md:grid-cols-1'} gap-6`}>
-              {selectedService?.show_days && (
-                <div>
-                  <Label htmlFor="number_of_days">Anzahl Tage *</Label>
-                  <Input
-                    id="number_of_days"
-                    type="number"
-                    min="1"
-                    required
-                    value={formData.number_of_days}
-                    onChange={(e) => handleChange('number_of_days', parseInt(e.target.value))}
-                    placeholder="1"
-                  />
-                </div>
-              )}
-
+            {selectedService?.show_days && (
               <div>
-                <Label htmlFor="number_of_participants">Anzahl Teilnehmer</Label>
+                <Label htmlFor="number_of_days">Anzahl Male *</Label>
                 <Input
-                  id="number_of_participants"
+                  id="number_of_days"
                   type="number"
                   min="1"
-                  value={formData.number_of_participants}
-                  onChange={(e) => handleChange('number_of_participants', parseInt(e.target.value))}
+                  required
+                  value={formData.number_of_days}
+                  onChange={(e) => handleChange('number_of_days', parseInt(e.target.value))}
                   placeholder="1"
                 />
               </div>
-            </div>
+            )}
 
             <div>
               <Label htmlFor="preferred_time">Bevorzugte Zeit *</Label>
@@ -229,7 +219,7 @@ export default function Booking() {
                   required
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Wählen Sie eine Zeit (Hatha Yoga)" />
+                    <SelectValue placeholder="Wähle eine Zeit (Hatha Yoga)" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Montag 08:15 - 09:30 Uhr">Montag 08:15 – 09:30 Uhr</SelectItem>
@@ -246,7 +236,7 @@ export default function Booking() {
                   required
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Wählen Sie eine Zeit (Schwangerschaftsyoga)" />
+                    <SelectValue placeholder="Wähle eine Zeit (Schwangerschaftsyoga)" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Donnerstag 17:30 - 18:15 Uhr">Donnerstag 17:30 – 18:15 Uhr</SelectItem>
@@ -259,7 +249,7 @@ export default function Booking() {
                   required
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Wählen Sie eine Zeit (Yoganidra)" />
+                    <SelectValue placeholder="Wähle eine Zeit (Yoganidra)" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Donnerstag 19:00 - 20:15 Uhr">Donnerstag 19:00 – 20:15 Uhr</SelectItem>
@@ -279,6 +269,16 @@ export default function Booking() {
               )}
             </div>
 
+            <div>
+              <Label htmlFor="preferred_date">Gewünschtes Startdatum</Label>
+              <Input
+                id="preferred_date"
+                type="date"
+                value={formData.preferred_date}
+                onChange={(e) => handleChange('preferred_date', e.target.value)}
+              />
+            </div>
+
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="is_trial"
@@ -296,32 +296,24 @@ export default function Booking() {
                 id="message"
                 value={formData.message}
                 onChange={(e) => handleChange('message', e.target.value)}
-                placeholder="Teilen Sie mir Ihre Wünsche und Fragen mit..."
+                placeholder="Teile mir Deine Wünsche und Fragen mit..."
                 rows={5}
               />
             </div>
 
-            {selectedService?.price > 0 && (() => {
-              const participants = Math.max(1, parseInt(formData.number_of_participants) || 1);
-              const total = selectedService.price * participants;
-              return (
-                <div className="rounded-lg border-2 border-gray-300 bg-gray-50 p-5">
-                  <div className="flex justify-between text-sm text-gray-600 mb-2">
-                    <span>{selectedService.name}</span>
-                    <span>CHF {selectedService.price.toFixed(2)} pro Person</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-gray-600 mb-2">
-                    <span>Anzahl Teilnehmer</span>
-                    <span>{participants}</span>
-                  </div>
-                  <div className="flex justify-between font-bold text-gray-900 text-xl border-t-2 border-gray-300 pt-3 mt-3">
-                    <span>Total</span>
-                    <span>CHF {total.toFixed(2)}</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2 text-center">Die Preise werden pro Quartal abgerechnet.</p>
+            {selectedService?.price > 0 && (
+              <div className="rounded-lg border-2 border-gray-300 bg-gray-50 p-5">
+                <div className="flex justify-between text-sm text-gray-600 mb-2">
+                  <span>{selectedService.name}</span>
+                  <span>CHF {selectedService.price.toFixed(2)} pro Person</span>
                 </div>
-              );
-            })()}
+                <div className="flex justify-between font-bold text-gray-900 text-xl border-t-2 border-gray-300 pt-3 mt-3">
+                  <span>Preis</span>
+                  <span>CHF {selectedService.price.toFixed(2)}</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-2 text-center">Die Preise werden pro Quartal abgerechnet.</p>
+              </div>
+            )}
 
             <div className="pt-4">
               <Button 

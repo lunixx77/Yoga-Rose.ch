@@ -34,10 +34,14 @@ create table if not exists public.bookings (
   number_of_days int default 1,
   number_of_participants int default 1,
   preferred_time text,
+  preferred_date text,
   is_trial boolean default false,
   message text,
   status text not null default 'neu'
 );
+
+-- Gewünschtes Startdatum bei Anfragen
+alter table public.bookings add column if not exists preferred_date text;
 
 -- Bewertungen (Seite Bewertungen + Admin)
 create table if not exists public.reviews (

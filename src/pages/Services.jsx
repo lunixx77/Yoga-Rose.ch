@@ -49,7 +49,7 @@ export default function Services() {
             <h1 className="text-3xl font-serif text-gray-800">Meine Angebote</h1>
           </div>
           <p className="text-base text-gray-600">
-            Wählen Sie aus meinen vielfältigen Angeboten für Körper, Geist und Seele
+            Wähle aus meinen vielfältigen Angeboten für Körper, Geist und Seele
           </p>
         </div>
 
@@ -67,7 +67,7 @@ export default function Services() {
         ) : services.length === 0 ? (
           <div className="border border-gray-300 p-12 text-center bg-white">
             <p className="text-gray-500">
-              Derzeit sind keine Angebote verfügbar. Bitte kontaktieren Sie mich direkt.
+              Derzeit sind keine Angebote verfügbar. Bitte kontaktiere mich direkt.
             </p>
           </div>
         ) : (
@@ -111,9 +111,9 @@ export default function Services() {
 
         {/* Contact CTA */}
         <div className="mt-10 border-2 border-gray-300 p-6 text-center bg-white">
-          <h2 className="text-xl font-serif mb-3 text-gray-800">Haben Sie Fragen?</h2>
+          <h2 className="text-xl font-serif mb-3 text-gray-800">Hast Du Fragen?</h2>
           <p className="text-gray-600 mb-4 text-sm">
-            Ich berate Sie gerne persönlich zu meinen Angeboten
+            Ich berate Dich gerne persönlich zu meinen Angeboten
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <a href="tel:0786404811">
