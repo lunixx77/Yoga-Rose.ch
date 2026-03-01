@@ -339,12 +339,21 @@ export default function Booking() {
             {selectedService?.price > 0 && (
               <div className="rounded-lg border-2 border-gray-300 bg-gray-50 p-5">
                 <div className="flex justify-between text-sm text-gray-600 mb-2">
-                  <span>{selectedService.name}</span>
-                  <span>CHF {selectedService.price.toFixed(2)} pro Person</span>
+                  <span>
+                    {selectedService.name}
+                    {selectedService.show_days && (formData.number_of_days || 1) > 1
+                      ? ` \u00d7 ${formData.number_of_days} Male`
+                      : ""}
+                  </span>
+                  <span>CHF {selectedService.price.toFixed(2)} pro Mal</span>
                 </div>
                 <div className="flex justify-between font-bold text-gray-900 text-xl border-t-2 border-gray-300 pt-3 mt-3">
                   <span>Preis</span>
-                  <span>CHF {selectedService.price.toFixed(2)}</span>
+                  <span>
+                    {selectedService.show_days
+                      ? `CHF ${(selectedService.price * (formData.number_of_days || 1)).toFixed(2)}`
+                      : `CHF ${selectedService.price.toFixed(2)} pro Mal`}
+                  </span>
                 </div>
                 <p className="text-xs text-gray-500 mt-2 text-center">Die Preise werden pro Quartal abgerechnet.</p>
               </div>

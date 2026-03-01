@@ -62,6 +62,37 @@ export async function sendBookingConfirmation(formData) {
 }
 
 /**
+ * Benachrichtigung an die Inhaberin wenn eine neue Event-Buchung eingeht.
+ */
+export async function sendEventBookingNotification(data) {
+  return send(TEMPLATE_BOOKING_OWNER, {
+    to_email: OWNER_EMAIL,
+    customer_name: data.customer_name,
+    customer_email: data.customer_email,
+    customer_phone: data.customer_phone,
+    service_name: data.event_title,
+    preferred_time: data.dates_summary || "–",
+    preferred_date: "–",
+    number_of_days: data.number_of_participants || 1,
+    is_trial: "–",
+    message: data.message || "–",
+  });
+}
+
+/**
+ * Bestätigungs-Email an den Kunden nach einer Event-Buchung.
+ */
+export async function sendEventBookingConfirmation(data) {
+  return send(TEMPLATE_BOOKING_CUSTOMER, {
+    to_email: data.customer_email,
+    customer_name: data.customer_name,
+    service_name: data.event_title,
+    preferred_time: data.dates_summary || "–",
+    preferred_date: "–",
+  });
+}
+
+/**
  * Benachrichtigung an die Inhaberin wenn eine neue Bewertung eingeht.
  */
 export async function sendReviewNotification(reviewData) {

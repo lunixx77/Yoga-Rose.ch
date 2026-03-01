@@ -30,7 +30,7 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation Bar */}
-      <nav className="bg-white shadow-md sticky top-0 z-50">
+      <nav className="sticky top-0 z-50 bg-white/30 backdrop-blur-2xl border-b border-white/20 shadow-xl shadow-black/10">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <Link to={createPageUrl("Home")} className="text-gray-800 hover:text-stone-700 transition-colors">
